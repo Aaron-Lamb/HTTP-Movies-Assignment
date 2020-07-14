@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import axios from 'axios';
 
-const UpdateForm = () => {
+const UpdateForm = (props) => {
     const { id } = useParams();
     const { push } = useHistory();
     const [updatedMovie, setUpdatedMovie] = useState({
@@ -13,6 +13,14 @@ const UpdateForm = () => {
         stars: []
     })
 
+    useEffect(() => {
+        axios.get(`http://localhost:8000/api/movies/${id}`)
+        .then(response => {
+            setUpdatedMovie(response.data)
+        })
+        .catch(error => console.log(error))
+    }, [id])
+
     const handleChanges = event => {
         setUpdatedMovie({
             ...updatedMovie,
@@ -22,6 +30,12 @@ const UpdateForm = () => {
 
     const handleSubmit = event => {
         event.preventDefault();
+        axios.put(`http://localhost:8000/api/movies/${id}`, updatedMovie)
+        .then(response => {
+            props.moviesList(response.data)
+            push('/')
+        })
+        .catch(error => console.log(error))
     }
 
     return(
@@ -33,7 +47,7 @@ const UpdateForm = () => {
             <label htmlFor='metascore'>Metascore: </label>
             <input type='text' name='metascore' id='metascore' value={updatedMovie.metascore} onChange={handleChanges} />
             <label htmlFor='stars'>Stars: </label>
-            <input type='text' name='stars' id='stars' value={updatedMovie.stars} onChange={handleChanges} />
+            <textarea name='stars' id='stars' value={updatedMovie.stars} onChange={handleChanges} />
             <button type='submit'>Update</button>
         </form>
     )
